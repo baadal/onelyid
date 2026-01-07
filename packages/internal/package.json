@@ -1,0 +1,23 @@
+{
+  "name": "@onelyid/internal",
+  "version": "0.0.0",
+  "description": "internal unpublished package",
+  "author": "abraj",
+  "license": "MIT",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "tsc": "tsc -b",
+    "lexgen": "lex gen-server ./generated/lexicon ./schemas/lexicons/*",
+    "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo"
+  },
+  "type": "commonjs",
+  "dependencies": {
+    "@atproto/lexicon": "^0.6.0",
+    "@atproto/xrpc-server": "^0.10.7",
+    "multiformats": "^13.4.2"
+  },
+  "devDependencies": {
+    "@atproto/lex-cli": "^0.9.8"
+  }
+}
