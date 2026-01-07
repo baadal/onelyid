@@ -35,6 +35,22 @@
     "node",
     "backend"
   ],
+  "dependencies": {
+    "@atproto/oauth-client-node": "catalog:",
+    "@atproto/syntax": "catalog:",
+    "@onelyid/common": "workspace:*",
+    "better-sqlite3": "catalog:",
+    "iron-session": "catalog:",
+    "kysely": "catalog:"
+  },
+  "peerDependencies": {
+    "express": "^4.22.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "catalog:",
+    "@types/express": "catalog:",
+    "express": "catalog:"
+  },
   "tsup": {
     "entry": [
       "src/index.ts"
