@@ -1,0 +1,46 @@
+{
+  "name": "@onelyid/client",
+  "version": "0.0.0",
+  "description": "Add ATProto login to your Express App in minutes",
+  "author": "abraj",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "tsc": "tsc -b",
+    "build": "tsup --dts",
+    "build:server": "tsup",
+    "publish": "npm publish",
+    "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo"
+  },
+  "type": "commonjs",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/baadal/onelyid.git"
+  },
+  "keywords": [
+    "onelyid",
+    "atproto",
+    "login",
+    "auth",
+    "authentication",
+    "express",
+    "bluesky",
+    "oauth",
+    "oauth2",
+    "server",
+    "node",
+    "backend"
+  ],
+  "tsup": {
+    "entry": [
+      "src/index.ts"
+    ],
+    "splitting": false,
+    "sourcemap": true,
+    "clean": true
+  }
+}
