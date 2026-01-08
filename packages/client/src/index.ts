@@ -1,2 +1,2 @@
 export { authMiddleware } from './middleware'
-export type { MiddlewareConfig } from './types/common'
+export type { MiddlewareConfig, UserInfo } from './types/common'
