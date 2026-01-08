@@ -4,6 +4,9 @@
     "rootDir": "src",
     "outDir": "dist"
   },
+  "references": [
+    { "path": "../internal" }
+  ],
   "include": ["src"],
   "exclude": [
     "node_modules",

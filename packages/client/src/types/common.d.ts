@@ -1,6 +1,7 @@
 import type { OAuthClient } from '@atproto/oauth-client-node';
 import type { OAuthClientFactory } from '../oauth-client';
 import type { Database } from '../db';
+import type { BidirectionalResolver } from '../id-resolver'
 
 export type { Database } from '../db'
 
@@ -31,10 +32,18 @@ export type RespGlobals = {
 export type AppContext = {
   logger: Logger;
   db: Database | null;
+  resolver: BidirectionalResolver | null;
   oauthClientFactory: OAuthClientFactory | null;
 }
 
 // request-specific context
 export type RequestContext = {
   oauthClient: OAuthClient | null;
+}
+
+export type UserInfo = {
+  did: string;
+  handle: string;
+  displayName?: string;
+  avatar?: string;
 }

@@ -5,7 +5,8 @@ import { assertPath } from '@onelyid/common'
 import { createDb, migrateToLatest } from './db'
 import { OAuthClientFactory } from './oauth-client'
 import { getOrCreateCookieSecret } from './db/queries'
-import { getSession } from './session'
+import { createBidirectionalResolver, createIdResolver } from './id-resolver'
+import { getSession, getSessionUser } from './session'
 import { assertPublicUrl, getConsoleLogger, getDatabasePath, isValidHandle } from './utils/utils'
 import { AppContext, AuthMiddlewareConfig, RespGlobals } from './types/common'
 import { DEFAULT_MOUNT_PATH, INVALID } from './const'
@@ -43,6 +44,7 @@ export const authMiddleware = (config?: AuthMiddlewareConfig): RequestHandler =>
   const ctx: AppContext = {
     logger: config?.logger ?? getConsoleLogger(),
     db: null,
+    resolver: null,
     oauthClientFactory: null,
   };
 
@@ -57,6 +59,9 @@ export const authMiddleware = (config?: AuthMiddlewareConfig): RequestHandler =>
         globals.cookieSecret = await getOrCreateCookieSecret(ctx.db)
       }
 
+      const baseIdResolver = createIdResolver()
+      ctx.resolver = createBidirectionalResolver(baseIdResolver)
+
       ctx.oauthClientFactory = new OAuthClientFactory()
 
       registerRoutes(router, ctx, globals, config)
@@ -70,7 +75,7 @@ export const authMiddleware = (config?: AuthMiddlewareConfig): RequestHandler =>
     if (initError) {
       return next(initError)
     }
-    if (!ctx.db || !globals.cookieSecret || !ctx.oauthClientFactory) {
+    if (!ctx.db || !globals.cookieSecret || !ctx.resolver || !ctx.oauthClientFactory) {
       return res.status(503).send('Service initializing')
     }
     if (globals.publicUrl === INVALID) {
@@ -94,10 +99,14 @@ export const authMiddleware = (config?: AuthMiddlewareConfig): RequestHandler =>
   return router
 }
 
-async function initAuthFlow(handle: string, req: Request, res: Response, globals: RespGlobals, config: AuthMiddlewareConfig | undefined) {
+async function initAuthFlow(handle: string, req: Request, res: Response, globals: RespGlobals, config: AuthMiddlewareConfig | undefined, devMode?: boolean) {
   let loginRedirect = assertPath(config?.loginRedirect);
   if (!loginRedirect) {
-    loginRedirect = '/'
+    if (devMode) {
+      loginRedirect = `${globals.mountPath}/userinfo`
+    } else {
+      loginRedirect = '/'
+    }
   }
 
   const purpose = req.get('Sec-Purpose') ?? req.get('Purpose')
@@ -168,7 +177,7 @@ function registerRoutes(router: Router, ctx: AppContext, globals: RespGlobals, c
 
       // Initiate the OAuth flow
       try {
-        await initAuthFlow(handle, req, res, globals, config)
+        await initAuthFlow(handle, req, res, globals, config, true)
       } catch (err) {
         ctx.logger.error({ err }, 'oauth authorize failed')
         return res.json({
@@ -178,6 +187,20 @@ function registerRoutes(router: Router, ctx: AppContext, globals: RespGlobals, c
               : "couldn't initiate login",
         })
       }
+    })
+  )
+
+  // User info for current session
+  router.get(
+    `${globals.mountPath}/userinfo`,
+    handler(async (req, res) => {
+      const { user, error } = await getSessionUser(req, res, ctx, globals.cookieSecret)
+      if (user === null) {
+        return res.json({ ok: true, user, info: 'not logged-in' })
+      } else if (!user) {
+        return res.json({ ok: true, user: null, error })
+      }
+      return res.json({ ok: true, user })
     })
   )
 }
