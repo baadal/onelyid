@@ -11,10 +11,10 @@ const createClient = async (ctx: AppContext, publicUrl: string, baseUrl: string,
       client_name: 'ATProto client',
       client_id: publicUrl
         ? `${baseUrl}/oauth-client-metadata.json`
-        : `http://localhost?redirect_uri=${enc(`${basePath}/callback`)}&scope=${enc('atproto transition:generic')}`,
+        : `http://localhost?redirect_uri=${enc(`${basePath}/callback`)}&scope=${enc('atproto transition:generic transition:email')}`,
       client_uri: baseUrl,
       redirect_uris: [`${basePath}/callback`],
-      scope: 'atproto transition:generic',
+      scope: 'atproto transition:generic transition:email',
       grant_types: ['authorization_code', 'refresh_token'],
       response_types: ['code'],
       application_type: 'web',
