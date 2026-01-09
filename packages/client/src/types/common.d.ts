@@ -41,6 +41,8 @@ export type AppContext = {
 export type UserInfo = {
   did: string;
   handle: string;
+  email: string;
+  emailTrusted: boolean;
   displayName?: string;
   avatar?: string;
 }

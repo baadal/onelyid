@@ -143,7 +143,7 @@ async function initAuthFlow(handle: string, req: Request, res: Response, ctx: Ap
   }
 
   const url = await ctx.oauthClient!.authorize(handle, {
-    scope: 'atproto transition:generic',
+    scope: 'atproto transition:generic transition:email',
     state: JSON.stringify({ loginRedirect }),
   })
   return res.redirect(url.toString())
