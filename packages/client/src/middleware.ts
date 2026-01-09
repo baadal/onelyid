@@ -123,6 +123,11 @@ async function initAuthFlow(handle: string, req: Request, res: Response, globals
   return res.redirect(url.toString())
 }
 
+async function deleteSession(req: Request, res: Response, globals: RespGlobals) {
+  const session = await getSession(req, res, globals.cookieSecret);
+  await session.destroy()
+}
+
 function registerRoutes(router: Router, ctx: AppContext, globals: RespGlobals, config?: AuthMiddlewareConfig) {
   // OAuth metadata
   router.get(
@@ -186,6 +191,22 @@ function registerRoutes(router: Router, ctx: AppContext, globals: RespGlobals, c
               ? err.message
               : "couldn't initiate login",
         })
+      }
+    })
+  )
+
+  // Logout handler
+  // TODO: Can make it as POST later, with an info message on GET
+  router.all(
+    `${globals.mountPath}/logout`,
+    handler(async (req, res) => {
+      await deleteSession(req, res, globals)
+
+      const acceptsJSON = req.accepts(['json', 'html']) === 'json'
+      if (acceptsJSON) {
+        return res.json({ ok: true })
+      } else {
+        return res.redirect('/')
       }
     })
   )
