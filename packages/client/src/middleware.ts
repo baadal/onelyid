@@ -8,6 +8,7 @@ import { getOrCreateCookieSecret } from './db/queries'
 import { createBidirectionalResolver, createIdResolver } from './id-resolver'
 import { getSession, getSessionUser } from './session'
 import { assertPublicUrl, getConsoleLogger, getDatabasePath, isValidHandle } from './utils/utils'
+import { getDocRoutes } from './utils/req-utils'
 import { AppContext, AuthMiddlewareConfig, InternalGlobals, RespGlobals } from './types/common'
 import { DEFAULT_MOUNT_PATH, INVALID } from './const'
 
@@ -178,6 +179,18 @@ function registerRoutes(router: Router, ctx: AppContext, globals: RespGlobals, c
     })
   )
 
+  // Middleware root (base)
+  router.get(
+    `${globals.mountPath ?? '/'}`,
+    handler((req, res) => {
+      const { login, logout, userinfo } = getDocRoutes(req, globals)
+      return res.json({
+        info: "middleware root endpoint",
+        try: [{ login, logout, userinfo }],
+      })
+    })
+  )
+
   // OAuth callback to complete session creation
   router.get(
     `${globals.mountPath}/callback`,
@@ -215,10 +228,16 @@ function registerRoutes(router: Router, ctx: AppContext, globals: RespGlobals, c
   router.get(
     `${globals.mountPath}/login`,
     handler(async (req, res) => {
+      const { login, userinfo } = getDocRoutes(req, globals)
+
       // Validate
       const handle = req.query.handle as string
       if (!isValidHandle(handle)) {
-        return res.json({ handle: `${handle ?? ''}`, error: 'invalid handle' })
+        return res.json({
+          handle: `${handle ?? ''}`,
+          error: 'invalid handle',
+          try: [{ login, userinfo }],
+        })
       }
 
       // Initiate the OAuth flow
@@ -256,13 +275,14 @@ function registerRoutes(router: Router, ctx: AppContext, globals: RespGlobals, c
   router.get(
     `${globals.mountPath}/userinfo`,
     handler(async (req, res) => {
+      const { login, logout, userinfo } = getDocRoutes(req, globals)
       const { user, error } = await getSessionUser(req, res, ctx, globals.cookieSecret)
       if (user === null) {
-        return res.json({ ok: true, user, info: 'not logged-in' })
+        return res.json({ ok: true, user, info: 'not logged-in', try: [{ login, userinfo }] })
       } else if (!user) {
-        return res.json({ ok: true, user: null, error })
+        return res.json({ ok: true, user: null, error, try: [{ login, userinfo }] })
       }
-      return res.json({ ok: true, user })
+      return res.json({ ok: true, user, try: [{ logout, userinfo }] })
     })
   )
 }

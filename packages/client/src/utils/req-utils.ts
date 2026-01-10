@@ -2,6 +2,7 @@ import type { Request } from 'express'
 import { getHost } from '@onelyid/common'
 import { assertPublicUrl } from './utils';
 import { RespGlobals } from '../types/common';
+import { DEMO_HANDLE } from '../const';
 
 export function getBaseUrls(req: Request, globals: RespGlobals) {
   const host = getHost(req)
@@ -20,4 +21,14 @@ export function getBaseUrls(req: Request, globals: RespGlobals) {
   }
   const basePath = `${baseUrl}${globals.mountPath}`
   return { publicUrl, baseUrl, basePath }
+}
+
+export function getDocRoutes(req: Request, globals: RespGlobals) {
+  const demoHandle = DEMO_HANDLE;
+  const { basePath } = getBaseUrls(req, globals)
+
+  const login = `${basePath}/login?handle=${demoHandle}`;
+  const logout = `${basePath}/logout`;
+  const userinfo = `${basePath}/userinfo`;
+  return { login, logout, userinfo }
 }
