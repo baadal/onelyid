@@ -39,6 +39,7 @@
     "@atproto/api": "catalog:",
     "@atproto/identity": "catalog:",
     "@atproto/lexicon": "catalog:",
+    "@atproto/oauth-client": "catalog:",
     "@atproto/oauth-client-node": "catalog:",
     "@atproto/syntax": "catalog:",
     "@onelyid/common": "workspace:*",

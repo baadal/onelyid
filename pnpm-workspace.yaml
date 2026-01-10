@@ -9,6 +9,7 @@ catalog:
   multiformats: ^9.9.0
   "@atproto/api": ^0.18.21
   "@atproto/identity": ^0.4.12
+  "@atproto/oauth-client": ^0.5.14
   "@atproto/oauth-client-node": ^0.3.16
   "@atproto/lexicon": ^0.6.1
   "@atproto/lex-cli": ^0.9.8

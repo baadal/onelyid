@@ -13,6 +13,7 @@ export type DatabaseSchema = {
   auth_session: AuthSession
   auth_state: AuthState
   app_secrets: AppSecrets
+  oauth_lock: OAuthLock
 }
 
 export type AuthSession = {
@@ -28,6 +29,10 @@ export type AuthState = {
 export type AppSecrets = {
   key: string
   value: string
+}
+
+export type OAuthLock = {
+  key: string
 }
 
 type AuthStateJson = string
@@ -78,6 +83,19 @@ migrations['002'] = {
 
   async down(db: Kysely<unknown>) {
     await db.schema.dropTable('app_secrets').execute()
+  },
+}
+
+migrations['003'] = {
+  async up(db: Kysely<unknown>) {
+    await db.schema
+      .createTable('oauth_lock')
+      .addColumn('key', 'varchar', (col) => col.primaryKey())
+      .execute()
+  },
+
+  async down(db: Kysely<unknown>) {
+    await db.schema.dropTable('oauth_lock').execute()
   },
 }
 

@@ -3,6 +3,7 @@ import type { Request } from 'express'
 import type { AppContext, RespGlobals } from './types/common'
 import { SessionStore, StateStore } from './storage'
 import { getBaseUrls } from './utils/req-utils'
+import { sqliteRequestLock } from './lock'
 
 const createClient = async (ctx: AppContext, publicUrl: string, baseUrl: string, basePath: string) => {
   const enc = encodeURIComponent
@@ -23,6 +24,7 @@ const createClient = async (ctx: AppContext, publicUrl: string, baseUrl: string,
     },
     stateStore: new StateStore(ctx.db!),
     sessionStore: new SessionStore(ctx.db!),
+    requestLock: sqliteRequestLock(ctx.db!),
   })
 }
 
