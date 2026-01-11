@@ -5,8 +5,8 @@ import { assertPath } from '@onelyid/common'
 import { createDb, migrateToLatest } from './db'
 import { OAuthClientFactory } from './oauth-client'
 import { getSession } from './session'
-import { assertPublicUrl, getConsoleLogger, isValidHandle } from './utils/utils'
-import type { AppContext, AuthMiddlewareConfig, RespGlobals } from './types/common'
+import { assertPublicUrl, getConsoleLogger, getDatabasePath, isValidHandle } from './utils/utils'
+import { AppContext, AuthMiddlewareConfig, RespGlobals } from './types/common'
 import { DEFAULT_MOUNT_PATH, INVALID } from './const'
 
 // Helper function for defining routes
@@ -36,8 +36,6 @@ export const authMiddleware = (config: AuthMiddlewareConfig): RequestHandler => 
   globals.mountPath = assertPath(config.mountPath ?? DEFAULT_MOUNT_PATH);
   globals.publicUrl = assertPublicUrl(config.publicUrl);
 
-  const { dbPath } = config
-
   let initError: unknown = null
   const ctx: AppContext = {
     logger: config.logger ?? getConsoleLogger(),
@@ -48,6 +46,7 @@ export const authMiddleware = (config: AuthMiddlewareConfig): RequestHandler => 
   // kick off async initialization immediately
   ;(async () => {
     try {
+      const dbPath = config.dbPath || getDatabasePath()
       ctx.db = createDb(dbPath)
       await migrateToLatest(ctx.db)
 

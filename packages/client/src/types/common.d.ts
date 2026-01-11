@@ -13,7 +13,7 @@ export type Logger = {
 export type Session = { did: string }
 
 export type AuthMiddlewareConfig = {
-  dbPath: string;
+  dbPath?: string;
   cookieSecret: string;
   publicUrl?: string;
   mountPath?: string;
