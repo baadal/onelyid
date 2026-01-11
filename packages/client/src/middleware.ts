@@ -4,7 +4,7 @@ import { OAuthResolverError } from '@atproto/oauth-client-node'
 import { createDb, migrateToLatest } from './db'
 import { createClient } from './oauth-client'
 import { getSession } from './session'
-import { assertPath, assertPublicUrl, getConsoleLogger, isValidHandle } from './utils'
+import { assertPath, assertPublicUrl, getConsoleLogger, getDatabasePath, isValidHandle } from './utils'
 import { AppContext, MiddlewareConfig, RespGlobals } from './types/common'
 import { DEFAULT_MOUNT_PATH, INVALID } from './const'
 
@@ -40,8 +40,6 @@ export const authMiddleware = (config: MiddlewareConfig): RequestHandler => {
   globals.publicUrl = assertPublicUrl(config.publicUrl);
   globals.mountPath = assertPath(config.mountPath);
 
-  const { dbPath } = config
-
   let initError: unknown = null
   let routesRegistered = false
   const ctx: AppContext = {
@@ -53,6 +51,7 @@ export const authMiddleware = (config: MiddlewareConfig): RequestHandler => {
   // kick off async initialization immediately
   ;(async () => {
     try {
+      const dbPath = config.dbPath || getDatabasePath()
       ctx.db = createDb(dbPath)
       await migrateToLatest(ctx.db)
     } catch (err) {
