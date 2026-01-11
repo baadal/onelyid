@@ -24,7 +24,7 @@ const handler =
     }
   }
 
-export const authMiddleware = (config: MiddlewareConfig): RequestHandler => {
+export const authMiddleware = (config?: MiddlewareConfig): RequestHandler => {
   const router = express.Router()
 
   const globals: RespGlobals = {
@@ -39,14 +39,14 @@ export const authMiddleware = (config: MiddlewareConfig): RequestHandler => {
     basePath: '',
   }
 
-  globals.cookieSecret = config.cookieSecret ?? '';
-  globals.publicUrl = assertPublicUrl(config.publicUrl);
-  globals.mountPath = assertPath(config.mountPath);
+  globals.cookieSecret = config?.cookieSecret ?? '';
+  globals.publicUrl = assertPublicUrl(config?.publicUrl);
+  globals.mountPath = assertPath(config?.mountPath);
 
   let initError: unknown = null
   let routesRegistered = false
   const ctx: AppContext = {
-    logger: config.logger ?? getConsoleLogger(),
+    logger: config?.logger ?? getConsoleLogger(),
     db: null,
     oauthClient: null,
   };
@@ -54,7 +54,7 @@ export const authMiddleware = (config: MiddlewareConfig): RequestHandler => {
   // kick off async initialization immediately
   ;(async () => {
     try {
-      const dbPath = config.dbPath || getDatabasePath()
+      const dbPath = config?.dbPath || getDatabasePath()
       ctx.db = createDb(dbPath)
       await migrateToLatest(ctx.db)
 
@@ -144,7 +144,7 @@ async function initAuthFlow(handle: string, req: Request, res: Response, ctx: Ap
   return res.redirect(url.toString())
 }
 
-function registerRoutes(router: Router, ctx: AppContext, globals: RespGlobals, config: MiddlewareConfig) {
+function registerRoutes(router: Router, ctx: AppContext, globals: RespGlobals, config?: MiddlewareConfig) {
   // OAuth metadata
   router.get(
     '/oauth-client-metadata.json',
