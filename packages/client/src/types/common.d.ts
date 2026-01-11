@@ -14,7 +14,7 @@ export type Session = { did: string }
 
 export type AuthMiddlewareConfig = {
   dbPath?: string;
-  cookieSecret: string;
+  cookieSecret?: string;
   publicUrl?: string;
   mountPath?: string;
   loginRedirect?: string;
@@ -22,6 +22,7 @@ export type AuthMiddlewareConfig = {
 }
 
 export type RespGlobals = {
+  cookieSecret: string;
   mountPath: string;
   publicUrl: string;
 }
