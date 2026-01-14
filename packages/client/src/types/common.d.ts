@@ -21,6 +21,11 @@ export type MiddlewareConfig = {
   loginRedirect?: string;
 }
 
+export type InternalGlobals = {
+  ctx: AppContext | null;
+  globals: RespGlobals | null;
+}
+
 export type RespGlobals = {
   cookieSecret: string;
   publicUrl: string;

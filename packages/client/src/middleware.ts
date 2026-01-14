@@ -7,7 +7,7 @@ import { createClient } from './oauth-client'
 import { createBidirectionalResolver, createIdResolver } from './id-resolver'
 import { getSession, getSessionUser } from './session'
 import { assertPath, assertPublicUrl, getConsoleLogger, getDatabasePath, isValidHandle } from './utils'
-import { AppContext, MiddlewareConfig, RespGlobals } from './types/common'
+import { AppContext, InternalGlobals, MiddlewareConfig, RespGlobals } from './types/common'
 import { DEFAULT_MOUNT_PATH, INVALID } from './const'
 
 // Helper function for defining routes
@@ -24,6 +24,13 @@ const handler =
       next(err)
     }
   }
+
+// NOTE: Only use `iGlobals` where the usage is not direcly via `authMiddleware` setup
+// E.g. `setAuth` and `redirect` middlewares
+const iGlobals: InternalGlobals = {
+  ctx: null,
+  globals: null,
+};
 
 export const authMiddleware = (config?: MiddlewareConfig): RequestHandler => {
   const router = express.Router()
@@ -52,6 +59,9 @@ export const authMiddleware = (config?: MiddlewareConfig): RequestHandler => {
     oauthClient: null,
     resolver: null,
   };
+
+  iGlobals.ctx = ctx;
+  iGlobals.globals = globals;
 
   // kick off async initialization immediately
   ;(async () => {
@@ -115,6 +125,10 @@ export const authMiddleware = (config?: MiddlewareConfig): RequestHandler => {
       ctx.oauthClient = await createClient(ctx, globals)
     }
 
+    req.authFlow = (handle: string) => initAuthFlow(handle, req, res, ctx, globals, config);
+    req.getAuth = () => setReqAuth(req, res);
+    res.clearAuth = () => deleteSession(req, res, globals);
+
     // custom json response
     res.json = (data: unknown) => sendJson(res, data)
 
@@ -147,6 +161,32 @@ async function initAuthFlow(handle: string, req: Request, res: Response, ctx: Ap
     state: JSON.stringify({ loginRedirect }),
   })
   return res.redirect(url.toString())
+}
+
+export const setAuth: RequestHandler = async (req, res, next) => {
+  await setReqAuth(req, res)
+  next()
+};
+
+export const redirect: (path: string) => RequestHandler = (redirectPath: string) => (async (req, res, next) => {
+  await setReqAuth(req, res)
+  if (!req.auth) {
+    const path = assertPath(redirectPath);
+    return res.redirect(path)
+  }
+  next()
+}) satisfies RequestHandler;
+
+async function setReqAuth(req: Request, res: Response) {
+  if (iGlobals.ctx && iGlobals.globals?.cookieSecret) {
+    const { user, error } = await getSessionUser(req, res, iGlobals.ctx, iGlobals.globals.cookieSecret)
+    if (!error && user) {
+      req.auth = user
+    }
+  }
+  if (!req.auth) {
+    req.auth = null
+  }  
 }
 
 async function deleteSession(req: Request, res: Response, globals: RespGlobals) {
