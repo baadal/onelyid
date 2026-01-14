@@ -8,7 +8,7 @@ import { getOrCreateCookieSecret } from './db/queries'
 import { createBidirectionalResolver, createIdResolver } from './id-resolver'
 import { getSession, getSessionUser } from './session'
 import { assertPublicUrl, getConsoleLogger, getDatabasePath, isValidHandle } from './utils/utils'
-import { AppContext, AuthMiddlewareConfig, RespGlobals } from './types/common'
+import { AppContext, AuthMiddlewareConfig, InternalGlobals, RespGlobals } from './types/common'
 import { DEFAULT_MOUNT_PATH, INVALID } from './const'
 
 // Helper function for defining routes
@@ -25,6 +25,13 @@ const handler =
       next(err)
     }
   }
+
+// NOTE: Only use `iGlobals` where the usage is not direcly via `authMiddleware` setup
+// E.g. `setAuth` and `redirect` middlewares
+const iGlobals: InternalGlobals = {
+  ctx: null,
+  globals: null,
+};
 
 export const authMiddleware = (config?: AuthMiddlewareConfig): RequestHandler => {
   const router = express.Router()
@@ -47,6 +54,9 @@ export const authMiddleware = (config?: AuthMiddlewareConfig): RequestHandler =>
     resolver: null,
     oauthClientFactory: null,
   };
+
+  iGlobals.ctx = ctx;
+  iGlobals.globals = globals;
 
   // kick off async initialization immediately
   ;(async () => {
@@ -90,6 +100,11 @@ export const authMiddleware = (config?: AuthMiddlewareConfig): RequestHandler =>
       oauthClient: await ctx.oauthClientFactory.create(req, ctx, globals)
     };
 
+    req.authFlow = (handle: string, redirectUrl?: string) => initAuthFlow(handle, redirectUrl, req, res, globals, config);
+    req.getAuth = () => setReqAuth(req, res);
+
+    res.clearAuth = () => deleteSession(req, res, globals);
+
     // custom json response
     res.json = (data: unknown) => sendJson(res, data)
 
@@ -99,8 +114,8 @@ export const authMiddleware = (config?: AuthMiddlewareConfig): RequestHandler =>
   return router
 }
 
-async function initAuthFlow(handle: string, req: Request, res: Response, globals: RespGlobals, config: AuthMiddlewareConfig | undefined, devMode?: boolean) {
-  let loginRedirect = assertPath(config?.loginRedirect);
+async function initAuthFlow(handle: string, redirectUrl: string | undefined, req: Request, res: Response, globals: RespGlobals, config: AuthMiddlewareConfig | undefined, devMode?: boolean) {
+  let loginRedirect = redirectUrl ?? assertPath(config?.loginRedirect);
   if (!loginRedirect) {
     if (devMode) {
       loginRedirect = `${globals.mountPath}/userinfo`
@@ -121,6 +136,32 @@ async function initAuthFlow(handle: string, req: Request, res: Response, globals
     state: JSON.stringify({ loginRedirect }),
   })
   return res.redirect(url.toString())
+}
+
+export const setAuth: RequestHandler = async (req, res, next) => {
+  await setReqAuth(req, res)
+  next()
+};
+
+export const redirect: (path: string) => RequestHandler = (redirectPath: string) => (async (req, res, next) => {
+  await setReqAuth(req, res)
+  if (!req.auth) {
+    const path = assertPath(redirectPath ?? '/');
+    return res.redirect(path)
+  }
+  next()
+}) satisfies RequestHandler;
+
+async function setReqAuth(req: Request, res: Response) {
+  if (iGlobals.ctx && iGlobals.globals?.cookieSecret) {
+    const { user, error } = await getSessionUser(req, res, iGlobals.ctx, iGlobals.globals.cookieSecret)
+    if (!error && user) {
+      req.auth = user
+    }
+  }
+  if (!req.auth) {
+    req.auth = null
+  }
 }
 
 async function deleteSession(req: Request, res: Response, globals: RespGlobals) {
@@ -182,7 +223,7 @@ function registerRoutes(router: Router, ctx: AppContext, globals: RespGlobals, c
 
       // Initiate the OAuth flow
       try {
-        await initAuthFlow(handle, req, res, globals, config, true)
+        await initAuthFlow(handle, undefined, req, res, globals, config, true)
       } catch (err) {
         ctx.logger.error({ err }, 'oauth authorize failed')
         return res.json({

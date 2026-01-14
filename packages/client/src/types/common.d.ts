@@ -22,6 +22,11 @@ export type AuthMiddlewareConfig = {
   logger?: Logger;
 }
 
+export type InternalGlobals = {
+  ctx: AppContext | null;
+  globals: RespGlobals | null;
+}
+
 export type RespGlobals = {
   cookieSecret: string;
   mountPath: string;

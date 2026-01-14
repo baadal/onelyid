@@ -1,3 +1,3 @@
 import './types/globals.d.ts'
-export { authMiddleware } from './middleware'
+export { authMiddleware, redirect, setAuth } from './middleware'
 export type { AuthMiddlewareConfig, UserInfo } from './types/common'
