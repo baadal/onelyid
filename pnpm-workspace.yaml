@@ -8,9 +8,12 @@ catalog:
   kysely: ^0.22.0
   multiformats: ^9.9.0
   "@atproto/api": ^0.18.21
+  "@atproto/common": ^0.5.11
   "@atproto/identity": ^0.4.12
   "@atproto/oauth-client": ^0.5.14
   "@atproto/oauth-client-node": ^0.3.16
+  "@atproto/oauth-provider": ^0.15.9
+  "@atproto/pds": ^0.4.209
   "@atproto/lexicon": ^0.6.1
   "@atproto/lex-cli": ^0.9.8
   "@atproto/syntax": ^0.4.3
@@ -22,3 +25,4 @@ onlyBuiltDependencies:
   - better-sqlite3
   - core-js
   - esbuild
+  - sharp

@@ -35,7 +35,11 @@
     "node",
     "backend"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "@atproto/common": "^0.5.8",
+    "@atproto/oauth-provider": "^0.15.4",
+    "@atproto/pds": "^0.4.204"
+  },
   "peerDependencies": {
     "express": "^4.22.1"
   },
