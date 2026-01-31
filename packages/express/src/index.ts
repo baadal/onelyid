@@ -1,1 +1,3 @@
-export const hello = 'Hello';
+import './types/globals.d.ts'
+export { authMiddleware, redirect, setAuth } from './middleware'
+export type { AuthMiddlewareConfig, UserInfo } from './types/common'
