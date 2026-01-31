@@ -1,4 +1,9 @@
 packages:
   - packages/*
+
+catalog:
+  express: ^4.22.1
+  "@types/express": ^4.17.25
+
 onlyBuiltDependencies:
   - esbuild
