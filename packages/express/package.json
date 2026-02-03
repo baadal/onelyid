@@ -1,16 +1,22 @@
 {
   "name": "@onelyid/express",
   "version": "0.0.0",
-  "description": "ATProto OAuth provider",
+  "description": "ATProto Auth client for Express.js",
   "author": "abraj",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "tsc": "tsc -b",
     "build": "tsup --dts",
     "build:server": "tsup",
-    "publish": "npm publish",
+    "prepack": "mv README.md README-bkp.md && cp ../../README.md .",
+    "pack:dest": "pnpm pack --pack-destination ../../artifacts",
+    "postpack": "rm -f README.md && mv README-bkp.md README.md",
+    "prepublishOnly": "pnpm build",
     "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo"
   },
   "type": "commonjs",
@@ -36,7 +42,8 @@
     "backend"
   ],
   "dependencies": {
-    "@onelyid/common": "workspace:*"
+    "@onelyid/common": "workspace:*",
+    "cookie": "catalog:"
   },
   "peerDependencies": {
     "express": "^4.22.1"

@@ -1,16 +1,20 @@
 {
   "name": "@onelyid/common",
   "version": "0.0.0",
-  "description": "ATProto OAuth provider",
+  "description": "Shared utils for @onelyid packages",
   "author": "abraj",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "tsc": "tsc -b",
-    "build": "tsup --dts",
+    "build": "tsup --dts && tsc --esModuleInterop --outDir dist --rootDir src src/transports/*.ts",
     "build:server": "tsup",
-    "publish": "npm publish",
+    "pack:dest": "pnpm pack --pack-destination ../../artifacts",
+    "prepublishOnly": "pnpm build",
     "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo"
   },
   "type": "commonjs",
@@ -35,7 +39,15 @@
     "node",
     "backend"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "@baadal-sdk/dapi": "catalog:",
+    "cookie": "catalog:",
+    "pino": "catalog:",
+    "pino-abstract-transport": "catalog:",
+    "pino-pretty": "catalog:",
+    "psl": "catalog:",
+    "uuid": "catalog:"
+  },
   "peerDependencies": {
     "express": "^4.22.1"
   },

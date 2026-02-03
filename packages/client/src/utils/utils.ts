@@ -1,18 +1,10 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
+import { utils } from '@baadal-sdk/dapi'
 import { isValidHandle as isValidHandleSyntax } from '@atproto/syntax'
-import { isLocalHostname } from '@onelyid/common'
-import { Logger } from '../types/common'
+import { getPackageName, getRootPackageName, isLocalHostname } from '@onelyid/common'
 import { DEFAULT_DBFILE_DIR, DEFAULT_DBFILE_NAME, INVALID } from '../const'
-
-export function getConsoleLogger(): Logger {
-  return {
-    info: console.info,
-    warn: console.warn,
-    error: console.error,
-  }
-}
 
 // NOTE: `publicUrl` remains empty string ('') for localhost/127.0.0.1
 export function assertPublicUrl(url?: string) {
@@ -47,44 +39,41 @@ export function isValidHandle(handle?: string) {
   return isValidHandleSyntax(handle);
 }
 
-function getAppPackageName(): string | null {
-  let dir = process.cwd()
-
-  while (true) {
-    const pkgPath = path.join(dir, 'package.json')
-    if (fs.existsSync(pkgPath)) {
-      try {
-        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
-        return pkg.name ?? null
-      } catch {
-        return null
-      }
-    }
-
-    const parent = path.dirname(dir)
-    if (parent === dir) break
-    dir = parent
-  }
-
-  return null
+export function getAppPackageName() {
+  return getPackageName(__dirname)
 }
 
 export function getDatabasePath() {
-  // local db file
-  return DEFAULT_DBFILE_NAME
-
   let dbFile = DEFAULT_DBFILE_NAME;
-  const packageName = getAppPackageName()
-  if (packageName) {
-    dbFile = `${packageName}-${dbFile}`
-  }
-  dbFile = dbFile.replace(/\s+/g, '-');
+  // const packageName = getRootPackageName()
+  // if (packageName) {
+  //   dbFile = `${packageName}-${dbFile}`
+  // }
+  // dbFile = dbFile.replace(/\s+/g, '-');
 
-  const dir = path.join(os.homedir(), DEFAULT_DBFILE_DIR, 'db')
+  // const baseDir = path.join(os.homedir(), DEFAULT_DBFILE_DIR)
+  const baseDir = process.cwd()
+
+  const dir = path.join(baseDir, 'db')
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true })
   }
 
-  const file = path.join(dir, dbFile)
-  return file
+  const dbPath = path.join(dir, dbFile)
+  return dbPath
+}
+
+export function getDatabase2Path(baseUrl: string) {
+  const origin = new URL(baseUrl)
+  const hostname = origin.hostname
+  const hash = utils.sha256Hash(baseUrl)!.substring(0, 8)
+  const dbFile = `${hostname}-${hash}-${DEFAULT_DBFILE_NAME}`
+
+  const dir = path.join(process.cwd(), 'db', 'db-auth')
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
+  }
+
+  const dbPath = path.join(dir, dbFile)
+  return dbPath
 }

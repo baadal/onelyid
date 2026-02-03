@@ -1,10 +1,10 @@
 import type { RuntimeLock } from '@atproto/oauth-client'
-import type { Database } from './types/common'
+import type { Database2 } from './db2'
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 export const sqliteRequestLock =
-  (db: Database): RuntimeLock =>
+  (db: Database2): RuntimeLock =>
   async <T>(
     name: string,
     fn: () => T | PromiseLike<T>

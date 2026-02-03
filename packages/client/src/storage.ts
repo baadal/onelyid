@@ -4,10 +4,10 @@ import type {
   NodeSavedState,
   NodeSavedStateStore,
 } from '@atproto/oauth-client-node'
-import type { Database } from './types/common'
+import type { Database2 } from './db/db2'
 
 export class StateStore implements NodeSavedStateStore {
-  constructor(private db: Database) {}
+  constructor(private db: Database2) {}
   async get(key: string): Promise<NodeSavedState | undefined> {
     const result = await this.db.selectFrom('auth_state').selectAll().where('key', '=', key).executeTakeFirst()
     if (!result) return
@@ -27,7 +27,7 @@ export class StateStore implements NodeSavedStateStore {
 }
 
 export class SessionStore implements NodeSavedSessionStore {
-  constructor(private db: Database) {}
+  constructor(private db: Database2) {}
   async get(key: string): Promise<NodeSavedSession | undefined> {
     const result = await this.db.selectFrom('auth_session').selectAll().where('key', '=', key).executeTakeFirst()
     if (!result) return

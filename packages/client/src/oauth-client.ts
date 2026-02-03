@@ -3,9 +3,16 @@ import type { Request } from 'express'
 import type { AppContext, RespGlobals } from './types/common'
 import { SessionStore, StateStore } from './storage'
 import { getBaseUrls } from './utils/req-utils'
-import { sqliteRequestLock } from './lock'
+import { getDatabase2Path } from './utils/utils'
+import { createDb2Client } from './db'
+import { sqliteRequestLock } from './db/lock'
+import type { Database2 } from './db/db2'
 
-const createClient = async (ctx: AppContext, publicUrl: string, baseUrl: string, basePath: string) => {
+type InternalContext = {
+  db: Database2 | null;
+}
+
+const createClient = async (ctx: InternalContext, publicUrl: string, baseUrl: string, basePath: string) => {
   const enc = encodeURIComponent
   return new NodeOAuthClient({
     clientMetadata: {
@@ -31,13 +38,18 @@ const createClient = async (ctx: AppContext, publicUrl: string, baseUrl: string,
 export class OAuthClientFactory {
   private readonly cache = new Map<string, Promise<OAuthClient>>();
 
-  create(req: Request, ctx: AppContext, globals: RespGlobals): Promise<OAuthClient> {
+  async create(req: Request, _ctx: AppContext, globals: RespGlobals): Promise<OAuthClient> {
     const { publicUrl, baseUrl, basePath } = getBaseUrls(req, globals)
 
     let cached = this.cache.get(baseUrl)
     if (!cached) {
+      const dbPath = getDatabase2Path(baseUrl)
+      const db = await createDb2Client(dbPath)
+      const ctx: InternalContext = { db }
+
       cached = createClient(ctx, publicUrl, baseUrl, basePath).catch(err => {
         this.cache.delete(baseUrl);
+        req.ctx.logger.debug({ publicUrl, baseUrl, basePath })
         throw err;
       })
       this.cache.set(baseUrl, cached)

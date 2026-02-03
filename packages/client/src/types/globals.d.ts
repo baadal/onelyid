@@ -1,4 +1,5 @@
-import type { RequestContext, UserInfo } from './common'
+import { Environment } from '@onelyid/common'
+import type { RequestContext, UserInfo, LoginPageProps } from './common'
 
 // Express request augmentation
 declare global {
@@ -6,8 +7,9 @@ declare global {
     interface Request {
       ctx: RequestContext
       auth: UserInfo | null
-      authFlow: (handle: string, redirectUrl?: string) => Promise<void>
-      getAuth: () => Promise<void>
+      authFlow: () => Promise<LoginPageProps | void>
+      getAuth: () => Promise<UserInfo | null>
+      mode: Environment
     }
     interface Response {
       clearAuth: () => Promise<void>

@@ -1,5 +1,13 @@
-import net from 'node:net'
-import { ALLOWED_BASE_DOMAINS } from './const'
+import fs from 'node:fs'
+import path from 'node:path'
+// import crypto from 'node:crypto'
+import { v7 as uuidv7 } from 'uuid'
+import { Environment } from './const-export';
+
+export function getUuid() {
+  // return crypto.randomUUID()
+  return uuidv7()
+}
 
 export function assertPath(path?: string) {
   let newPath = path ?? '';
@@ -15,48 +23,52 @@ export function assertPath(path?: string) {
   return newPath;
 }
 
-export function isLocalHostname(hostname: string): boolean {
-  // Normalize
-  const host = hostname.toLowerCase()
+export function assertOrigin(origin?: string) {
+  let newOrigin = origin ?? '';
+  newOrigin = newOrigin.trim();
+  if (!newOrigin) return newOrigin;
 
-  // Obvious local hostnames
-  if (host === "localhost") return true
-  if (host.endsWith(".localhost")) return true
+  try {
+    const url = new URL(newOrigin)
+    const parsedOrigin = `${url.protocol}//${url.host}`
+    if (origin === parsedOrigin) {
+      return parsedOrigin
+    }
+  } catch(e) {}
 
-  // Check if it's an IP address
-  const ipType = net.isIP(host)
-  if (!ipType) return false
-
-  // IPv4
-  if (ipType === 4) {
-    return (
-      host.startsWith("127.") ||        // loopback
-      host.startsWith("10.") ||         // private
-      host.startsWith("192.168.") ||    // private
-      /^172\.(1[6-9]|2\d|3[0-1])\./.test(host) // private
-    )
-  }
-
-  // IPv6
-  if (ipType === 6) {
-    return (
-      host === "::1" ||                 // loopback
-      host.startsWith("fc") ||          // unique local
-      host.startsWith("fd")
-    )
-  }
-
-  return false
+  return '';
 }
 
-export function getBaseDomain(hostname: string): string | null {
-  if (!hostname || isLocalHostname(hostname)) {
-    return null
+export function assertRequestMode(mode?: string): Environment | undefined {
+  if (mode === Environment.Prod) {
+    return Environment.Prod
+  } else if (mode === Environment.Uat) {
+    return Environment.Uat
   }
-  for (const base of ALLOWED_BASE_DOMAINS) {
-    if (hostname === base || hostname.endsWith(`.${base}`)) {
-      return base
+}
+
+export function getPackageName(startDir: string): string | null {
+  let dir = startDir
+
+  while (true) {
+    const pkgPath = path.join(dir, 'package.json')
+    if (fs.existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+        return pkg.name ?? null
+      } catch {
+        return null
+      }
     }
+
+    const parent = path.dirname(dir)
+    if (parent === dir) break
+    dir = parent
   }
+
   return null
+}
+
+export function getRootPackageName() {
+  return getPackageName(process.cwd())
 }

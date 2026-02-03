@@ -1,12 +1,13 @@
 import type { Request } from 'express'
-import { getHost } from '@onelyid/common'
+import { getOrigin } from '@onelyid/common'
 import { assertPublicUrl } from './utils';
 import { RespGlobals } from '../types/common';
 import { DEMO_HANDLE } from '../const';
 
 export function getBaseUrls(req: Request, globals: RespGlobals) {
-  const host = getHost(req)
-  const publicUrl = globals.publicUrl || assertPublicUrl(`${req.protocol}://${host}`)
+  const origin = getOrigin(req)
+  const host = new URL(origin).host
+  const publicUrl = globals.publicUrl || assertPublicUrl(origin)
 
   // NOTE: `publicUrl` remains empty string ('') for localhost/127.0.0.1
   let baseUrl: string;

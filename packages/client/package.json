@@ -1,16 +1,20 @@
 {
   "name": "@onelyid/client",
   "version": "0.0.0",
-  "description": "Add ATProto login to your Express App in minutes",
+  "description": "ATProto Auth client",
   "author": "abraj",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "tsc": "tsc -b",
     "build": "tsup --dts",
     "build:server": "tsup",
-    "publish": "npm publish",
+    "pack:dest": "pnpm pack --pack-destination ../../artifacts",
+    "prepublishOnly": "pnpm build",
     "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo"
   },
   "type": "commonjs",
@@ -42,8 +46,10 @@
     "@atproto/oauth-client": "catalog:",
     "@atproto/oauth-client-node": "catalog:",
     "@atproto/syntax": "catalog:",
+    "@baadal-sdk/dapi": "catalog:",
     "@onelyid/common": "workspace:*",
     "better-sqlite3": "catalog:",
+    "cookie": "catalog:",
     "iron-session": "catalog:",
     "kysely": "catalog:"
   },

@@ -4,13 +4,13 @@
   "description": "ATProto OAuth provider",
   "author": "abraj",
   "license": "MIT",
+  "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "tsc": "tsc -b",
     "build": "tsup --dts",
     "build:server": "tsup",
-    "publish": "npm publish",
     "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo"
   },
   "type": "commonjs",
