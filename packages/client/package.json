@@ -1,6 +1,6 @@
 {
   "name": "@onelyid/client",
-  "version": "0.0.0",
+  "version": "0.2.14",
   "description": "ATProto Auth client",
   "author": "abraj",
   "license": "MIT",
