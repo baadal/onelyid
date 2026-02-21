@@ -7,9 +7,21 @@
   "private": true,
   "main": "index.js",
   "scripts": {
+    "tsc": "tsc -b",
+    "build:gen": "pnpm run lexgen",
+    "lexgen": "lex gen-server ./generated/lexicon ./schemas/lexicons/*",
     "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo"
   },
   "type": "commonjs",
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "@atproto/xrpc-server": "catalog:",
+    "multiformats": "catalog:"
+  },
+  "peerDependencies": {
+    "@atproto/lexicon": "^0.6.1"
+  },
+  "devDependencies": {
+    "@atproto/lexicon": "catalog:",
+    "@atproto/lex-cli": "catalog:"
+  }
 }
