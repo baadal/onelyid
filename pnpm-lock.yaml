@@ -85,6 +85,8 @@ importers:
         specifier: 'catalog:'
         version: 4.22.1
 
+  packages/internal: {}
+
 packages:
 
   '@atproto-labs/did-resolver@0.2.6':
