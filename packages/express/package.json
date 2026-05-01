@@ -1,6 +1,6 @@
 {
   "name": "@onelyid/express",
-  "version": "0.2.14",
+  "version": "0.2.15",
   "description": "ATProto Auth client for Express.js",
   "author": "abraj",
   "license": "MIT",
